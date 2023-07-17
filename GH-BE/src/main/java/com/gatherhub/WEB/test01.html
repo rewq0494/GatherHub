@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Reservation and Payment</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+<h1>Reservation and Payment</h1>
+
+<div id="reservationForm">
+    <h2>Step 1: User Phone</h2>
+    <input type="text" id="memberPhone" placeholder="输入用户电话号码">
+    <button id="nextButton" onclick="handleNext()">下一步</button>
+</div>
+
+<div id="meetingRoomForm" style="display: none;">
+    <h2>Step 2: Meeting Room, Date, and Time</h2>
+    <select id="meetingRoomId">
+        <option value="MR001">MR001</option>
+        <option value="MR002">MR002</option>
+        <option value="MR003">MR003</option>
+        <option value="MR004">MR004</option>
+        <option value="MR005">MR005</option>
+    </select>
+    <input type="date" id="rentalDate">
+    <select id="rentalTime">
+        <option value="Morning">上午</option>
+        <option value="Afternoon">下午</option>
+        <option value="Evening">晚上</option>
+    </select>
+    <button id="selectRoomButton" onclick="handleSelectRoom()">选择会议室</button>
+</div>
+
+<div id="userData" style="display: none;">
+    <h2>用户资料</h2>
+    <p>电话： <span id="userDataPhone"></span></p>
+    <p>姓名： <span id="memberName"></span></p>
+    <p>邮箱： <span id="memberEmail"></span></p>
+    <p>公司： <span id="companyName"></span></p>
+    <p>税号： <span id="companyTaxId"></span></p>
+    <h2>第 3 步：确认用户输入</h2>
+    <input type="text" id="activityName" placeholder="输入活动名称">
+    <input type="text" id="remark" placeholder="输入备注">
+    <button id="ecpayButton" onclick="handleECPay()">ECPay 付款</button>
+</div>
+
+<div id="orderDetails" style="display: none;">
+    <h2>订单详情</h2>
+    <p>姓名： <span id="orderMemberName"></span></p>
+    <p>电话： <span id="orderMemberPhone"></span></p>
+    <p>邮箱： <span id="orderMemberEmail"></span></p>
+    <p>公司： <span id="orderCompanyName"></span></p>
+    <p>税号： <span id="orderCompanyTaxId"></span></p>
+    <p>活动： <span id="orderActivityName"></span></p>
+    <p>会议室： <span id="orderMeetingRoom"></span></p>
+    <p>备注： <span id="orderRemark"></span></p>
+    <p>金额： <span id="orderTotalAmount"></span></p>
+</div>
+
+<script>
+    let memberPhone;
+    let meetingRoomId;
+    let rentalDate;
+    let rentalTime;
+    let activityName;
+    let remark;
+    let merchantTradeNo; // 商户交易号
+
+    function handleNext() {
+        memberPhone = document.getElementById('memberPhone').value;
+        document.getElementById('userDataPhone').innerText = memberPhone;
+        document.getElementById('reservationForm').style.display = 'none';
+        document.getElementById('meetingRoomForm').style.display = 'block';
+    }
+
+    function handleSelectRoom() {
+        meetingRoomId = document.getElementById('meetingRoomId').value;
+        rentalDate = document.getElementById('rentalDate').value;
+        rentalTime = document.getElementById('rentalTime').value;
+
+        document.getElementById('meetingRoomForm').style.display = 'none';
+        document.getElementById('userData').style.display = 'block';
+
+        axios.get('http://localhost:8080/booking/profile/' + memberPhone)
+            .then(response => {
+                const data = response.data;
+                document.getElementById('memberName').innerText = data.memberName;
+                document.getElementById('memberEmail').innerText = data.memberEmail;
+                document.getElementById('companyName').innerText = data.companyName;
+                document.getElementById('companyTaxId').innerText = data.companyTaxId;
+            })
+            .catch(error => console.log(error));
+    }
+
+    // 當執行 handleECPay 函數時，以下為進行的操作：
+
+    function handleECPay() {
+        // 從網頁元素中獲取 activityName 和 remark 的值
+        const activityName = document.getElementById('activityName').value;
+        const remark = document.getElementById('remark').value;
+
+        // 使用 Axios 發送 POST 請求到指定的端點
+        axios.post(`http://localhost:8080/ecpay/${meetingRoomId}`)
+            .then(response => {
+                // 請求成功後的處理
+
+                // 將回傳的數據保存在 response.data 中
+                const data = response.data;
+
+                // 通過創建 Blob 對象將數據轉換為文本/html類型的檔案
+                const blob = new Blob([data], { type: 'text/html' });
+
+                // 通過創建 URL 並在新窗口中打開該 URL，顯示由回傳數據生成的檔案
+                const url = URL.createObjectURL(blob);
+                window.open(url);
+
+                // 將回傳數據中的 merchantTradeNo 賦值給變數 merchantTradeNo
+                const merchantTradeNo = data.merchantTradeNo;
+
+                // 顯示 nextStepButton 元素
+                document.getElementById('nextStepButton').style.display = 'block';
+            })
+            .catch(error => {
+                // 請求失敗的處理
+                console.log(error);
+            });
+    }
+
+
+    function saveDataAndDisplayResult() {
+        const totalAmount = 0;
+
+        document.getElementById('orderMemberName').innerText = document.getElementById('memberName').innerText;
+        document.getElementById('orderMemberPhone').innerText = memberPhone;
+        document.getElementById('orderMemberEmail').innerText = document.getElementById('memberEmail').innerText;
+        document.getElementById('orderCompanyName').innerText = document.getElementById('companyName').innerText;
+        document.getElementById('orderCompanyTaxId').innerText = document.getElementById('companyTaxId').innerText;
+        document.getElementById('orderActivityName').innerText = activityName;
+        document.getElementById('orderMeetingRoom').innerText = meetingRoomId;
+        document.getElementById('orderRemark').innerText = remark;
+        document.getElementById('orderTotalAmount').innerText = totalAmount;
+
+        document.getElementById('userData').style.display = 'none';
+        document.getElementById('orderDetails').style.display = 'block';
+
+        // 将订单详情保存到后端
+        axios.post(`http://localhost:8080/booking/save/${merchantTradeNo}`, {
+            memberPhone: memberPhone,
+            rentalDate: rentalDate,
+            rentalTime: rentalTime,
+            meetingroomId: meetingRoomId,
+            activityName: activityName,
+            totalAmount: totalAmount,
+            remark: remark,
+            tradeNo: merchantTradeNo // 使用商户交易号作为 tradeNo 的值
+        })
+            .then(response => {
+                console.log('订单保存成功:', response.data);
+                // 显示后端返回的结果
+                document.getElementById('orderResult').innerText = response.data;
+            })
+            .catch(error => console.log(error));
+    }
+</script>
+
+<button id="nextStepButton" onClick="saveDataAndDisplayResult()" style="display: none;">下一步</button>
+<p id="orderResult"></p>
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+# IntelliJ IDEA 相關檔案
+.idea/
+*.iml
+
+# Maven 或 Gradle 生成的目錄
+target/
+build/
+
+# 編譯後的類檔
+*.class
+
+# 日誌檔案
+*.log
+
+
+# 系統生成的檔案或目錄
+.DS_Store
+Thumbs.db
+
+# IDE 或編輯器生成的檔案
+.vscode/
+*.swp
+*.swo
+
+# 忽略 Eclipse 相關檔案
+.classpath
+.project
+.settings/
