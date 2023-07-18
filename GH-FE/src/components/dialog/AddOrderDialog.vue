@@ -3,10 +3,10 @@
   <div class="add-order-dialog">
     <h2>新增訂單</h2>
     <div class="add-area">
-      <label>
+      <!-- <label>
         <h3>訂單編號</h3>
         <input class="add-box" type="text" v-model="tradeNo" ref="tradeNoInput">
-      </label>
+      </label> -->
       <label>
         <h3>教室</h3>
         <select class="add-box" v-model="meetingroomId" ref="meetingroomIdInput">
@@ -103,11 +103,15 @@ export default {
           console.log('新增成功', response.data);
           this.$emit('confirm');
           this.showSuccessDialog = true;
+          setTimeout(() => {
+            location.reload(); // 在這裡重新載入畫面
+          }, 1000); // 延遲三秒後執行重新載入畫面
         })
         .catch(error => {
           console.error('新增失敗', error);
         });
     },
+
     fetchContactInfo() {
       const phoneNumber = this.memberPhone;
 
@@ -343,4 +347,5 @@ export default {
 .flatpickr-calendar.open {
   background-color: #d8d0c7;
   width: 100px;
-}</style>
+}
+</style>

@@ -2,6 +2,7 @@ package com.gatherhub.controller;
 
 import com.gatherhub.entity.MeetingRoomOrder;
 import com.gatherhub.service.OrderService;
+import com.gatherhub.service.impl.OrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,12 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+
+
     // 新增訂單
     @PostMapping("/insert")
     public ResponseEntity<String> insert(@RequestBody MeetingRoomOrder meetingRoomOrder) {
+
         String response = orderService.insert(meetingRoomOrder);
         if (response.startsWith("成功新增訂單")) {
             return ResponseEntity.ok(response);

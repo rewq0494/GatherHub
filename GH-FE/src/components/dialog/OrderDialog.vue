@@ -5,7 +5,6 @@
     <button class="btn-close" @click="closeDialog">╳</button>
     <div class="info-area">
       <h3 id="od-number">訂單編號：{{ tradeNo }}</h3>
-
       <label v-for="(field, index) in fields" :key="index">
         <div :class="['h3-box', field.label === '備註' ? 'note-div' : '']">
           <h3 :class="field.label === '備註' ? 'note-h3-box' : ''">{{ field.label }}</h3>
@@ -24,6 +23,7 @@
     <button v-else class="btn-confirm" @click="confirmEdit">確認修改</button>
     <button class="btn-cancle" @click="cancleOrder">取消訂單</button>
     <CancleOrderButton :tradeNo="tradeNo" />
+    <EditSuccessDialog v-if="showSuccessDialog" @close="closeSuccessDialog" />
   </div>
 </template>
 
@@ -31,11 +31,13 @@
 import axios from 'axios';
 import CancleOrderButton from '../button/CanaleOrderButton.vue';
 import moment from 'moment';
+import EditSuccessDialog from './EditSuccessDialog.vue';
 
 export default {
   emits: ['close', 'confirm', 'edit'],
   components: {
-    CancleOrderButton
+    CancleOrderButton,
+    EditSuccessDialog
   },
   props: {
     tradeNo: {
@@ -43,6 +45,7 @@ export default {
       required: true
     }
   },
+
   data() {
     return {
       note: '這裡是備註內容',
@@ -50,6 +53,7 @@ export default {
       showDialog: false,
       eventNameInput: '',
       editing: false,
+      showSuccessDialog: false,
       fields: [
         {
           label: '日期',
@@ -115,8 +119,12 @@ export default {
     };
   },
   methods: {
+
     closeDialog() {
       this.$emit('close');
+    },
+    closeSuccessDialog() {
+      this.showSuccessDialog = false;
     },
     startEditing() {
       this.fields.forEach(field => {
@@ -133,7 +141,14 @@ export default {
       });
       this.eventName = this.eventNameInput;
       this.editing = false;
-      this.$emit('confirm', this.eventName);
+
+      this.$emit('confirm-with-name', this.eventName); // 觸發帶參數的confirm-with-name事件
+
+      this.showSuccessDialog = true;
+      setTimeout(() => {
+        this.closeSuccessDialog();
+      }, 1200);
+
 
       // 更新 API 請求
       const tradeNo = this.tradeNo;

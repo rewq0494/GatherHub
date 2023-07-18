@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -26,6 +27,8 @@ public class OrderServiceImpl implements OrderService {
 
     // 新增訂單
     public String insert(MeetingRoomOrder meetingRoomOrder) {
+        String tradeNo = generateTradeNo(); // 生成交易編號
+        meetingRoomOrder.setTradeNo(tradeNo);
         // 驗證必填欄位
         StringBuilder errorMessage = new StringBuilder();
 
@@ -37,9 +40,9 @@ public class OrderServiceImpl implements OrderService {
             errorMessage.append("會議室名稱為必填欄位\n");
         }
 
-        if (meetingRoomOrder.getRentalTime() == null) {
-            errorMessage.append("會議室編號為必填欄位\n");
-        }
+//        if (meetingRoomOrder.getRentalTime() == null) {
+//            errorMessage.append("會議室編號為必填欄位\n");
+//        }
 
         // 檢查是否有錯誤信息
         if (errorMessage.length() > 0) {
@@ -55,10 +58,10 @@ public class OrderServiceImpl implements OrderService {
             meetingRoomOrder.setRemark("無");
         }
 
-        // 驗證公司資訊
-        if (!validateCompany(meetingRoomOrder.getCompanyTaxid())) {
-            return "核對公司資料失敗";
-        }
+//        // 驗證公司資訊
+//        if (!validateCompany(meetingRoomOrder.getCompanyTaxid())) {
+//            return "核對公司資料失敗";
+//        }
 
         // 驗證會員資訊
         if (!validateMember(meetingRoomOrder.getMemberPhone())) {
@@ -155,6 +158,24 @@ public class OrderServiceImpl implements OrderService {
     private boolean validateMember(String memberPhone) {
         Member member = memberDao.findByMemberPhone(memberPhone);
         return member != null;
+    }
+
+    // 生成交易號
+    private String generateTradeNo() {
+        String prefix = "GH";
+        String digits = generateRandomDigits(8);
+        return prefix + digits;
+    }
+
+    // 生成指定长度的随机数字字符串
+    private String generateRandomDigits(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            int digit = random.nextInt(10);
+            sb.append(digit);
+        }
+        return sb.toString();
     }
 
     //新增綠界ecpay訂單
